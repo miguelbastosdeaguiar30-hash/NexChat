@@ -1,0 +1,6 @@
+{
+  "appId": "app.nexchat.mobile",
+  "appName": "NexChat",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

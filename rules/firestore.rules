@@ -1,0 +1,690 @@
+rules_version = '2';
+
+// =====================================================================
+// NexChat — Cloud Firestore Security Rules (Spark / R$ 0,00)
+// Projeto: nexchat-58d82
+//
+// ESTADO: NÃO EXECUTADO. Escrito sem acesso ao Emulator Suite.
+// Rode os testes em tests/ antes de publicar.
+//
+// Princípios:
+//  - Negação por padrão (última regra do arquivo).
+//  - Tudo exige e-mail verificado (Google já vem verificado).
+//  - Sem Cloud Functions: invariantes entre documentos são garantidas
+//    com getAfter()/existsAfter() dentro de WriteBatch.
+//  - Papéis NUNCA são escolhidos livremente pelo cliente.
+// =====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------
+    // Autenticação
+    // ------------------------------------------------------------------
+    function signedIn() {
+      return request.auth != null
+        && request.auth.token.email_verified == true;
+    }
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ------------------------------------------------------------------
+    // Caminhos (cada função devolve um path literal completo)
+    // ------------------------------------------------------------------
+    function userPath(uid)            { return /databases/$(database)/documents/users/$(uid); }
+    function usernamePath(name)       { return /databases/$(database)/documents/usernames/$(name); }
+    function adminPath(uid)           { return /databases/$(database)/documents/admins/$(uid); }
+    function friendRequestPath(id)    { return /databases/$(database)/documents/friendRequests/$(id); }
+    function friendshipPath(id)       { return /databases/$(database)/documents/friendships/$(id); }
+    function blockPath(id)            { return /databases/$(database)/documents/blocks/$(id); }
+    function convPath(id)             { return /databases/$(database)/documents/conversations/$(id); }
+    function communityPath(cid)       { return /databases/$(database)/documents/communities/$(cid); }
+    function memberPath(cid, uid)     { return /databases/$(database)/documents/communities/$(cid)/members/$(uid); }
+    function channelPath(cid, chid)   { return /databases/$(database)/documents/communities/$(cid)/channels/$(chid); }
+    function invitePath(cid, code)    { return /databases/$(database)/documents/communities/$(cid)/invites/$(code); }
+    function banPath(cid, uid)        { return /databases/$(database)/documents/communities/$(cid)/bans/$(uid); }
+
+    // ------------------------------------------------------------------
+    // Validação genérica
+    // ------------------------------------------------------------------
+    function isText(v, minLen, maxLen) {
+      return v is string && v.size() >= minLen && v.size() <= maxLen;
+    }
+    function validColor(v) {
+      return v is string && v.matches('^#[0-9a-fA-F]{6}$');
+    }
+    function validUsername(v) {
+      return v is string && v.matches('^[a-z0-9_]{3,20}$');
+    }
+    function validRoleName(v) {
+      return v in ['member', 'moderator', 'admin'];
+    }
+
+    // ------------------------------------------------------------------
+    // Papéis em comunidades/grupos: member=1, moderator=2, admin=3
+    // (não membro = 0). O dono é um admin com ownerId == uid.
+    // ------------------------------------------------------------------
+    function roleRank(role) {
+      return role == 'admin' ? 3 : (role == 'moderator' ? 2 : (role == 'member' ? 1 : 0));
+    }
+    function rankOf(cid, uid) {
+      return exists(memberPath(cid, uid))
+        ? roleRank(get(memberPath(cid, uid)).data.role)
+        : 0;
+    }
+    function myRank(cid) {
+      return signedIn() ? rankOf(cid, request.auth.uid) : 0;
+    }
+    // Rank após o batch (para criação atômica: comunidade + dono + canal)
+    function myRankAfter(cid) {
+      return (signedIn() && existsAfter(memberPath(cid, request.auth.uid)))
+        ? roleRank(getAfter(memberPath(cid, request.auth.uid)).data.role)
+        : 0;
+    }
+    function isOwner(cid) {
+      return get(communityPath(cid)).data.ownerId == request.auth.uid;
+    }
+
+    // ------------------------------------------------------------------
+    // Mensagens (compartilhado entre DMs e canais)
+    // ------------------------------------------------------------------
+    function reactionCodes() {
+      return ['like', 'love', 'laugh', 'wow', 'sad', 'thanks', 'party', 'dislike'];
+    }
+    function validNewMessage(d) {
+      return d.keys().hasOnly(['senderId', 'text', 'createdAt', 'replyTo', 'reactions'])
+        && d.keys().hasAll(['senderId', 'text', 'createdAt', 'reactions'])
+        && d.senderId == request.auth.uid
+        && isText(d.text, 1, 2000)
+        && d.text.matches('[\\s\\S]*\\S[\\s\\S]*')
+        && d.createdAt == request.time
+        && d.reactions == {}
+        && (!('replyTo' in d) || isText(d.replyTo, 1, 40));
+    }
+    // Edição: só o autor; só text/editedAt; editedAt do servidor.
+    function isTextEdit() {
+      let n = request.resource.data;
+      let o = resource.data;
+      return o.senderId == request.auth.uid
+        && n.diff(o).affectedKeys().hasOnly(['text', 'editedAt'])
+        && isText(n.text, 1, 2000)
+        && n.text.matches('[\\s\\S]*\\S[\\s\\S]*')
+        && n.editedAt == request.time;
+    }
+    // Reação: um código por usuário, só na própria chave do mapa.
+    function isReactionUpdate() {
+      let n = request.resource.data;
+      let o = resource.data;
+      let me = request.auth.uid;
+      return n.diff(o).affectedKeys().hasOnly(['reactions'])
+        && n.reactions is map
+        && n.reactions.size() <= 100
+        && n.reactions.diff(o.reactions).affectedKeys().hasOnly([me])
+        && (!(me in n.reactions) || n.reactions[me] in reactionCodes());
+    }
+
+    // =================================================================
+    // admins/{uid} — criado SOMENTE pelo Console. Cliente nunca escreve.
+    // =================================================================
+    match /admins/{uid} {
+      allow get: if isSelf(uid);
+      allow list, write: if false;
+    }
+    function isGlobalAdmin() {
+      return signedIn() && exists(adminPath(request.auth.uid));
+    }
+
+    // =================================================================
+    // usernames/{username} — garante unicidade. Sem listagem.
+    // =================================================================
+    match /usernames/{name} {
+      allow get: if signedIn();
+      allow list, update: if false;
+
+      allow create: if signedIn()
+        && validUsername(name)
+        && request.resource.data.keys().hasOnly(['uid', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        // o perfil criado no MESMO batch precisa declarar este username
+        && getAfter(userPath(request.auth.uid)).data.username == name;
+
+      // só apaga se o perfil também sumir (evita nome "órfão" reutilizável)
+      allow delete: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && !existsAfter(userPath(request.auth.uid));
+    }
+
+    // =================================================================
+    // users/{uid} — perfil público
+    // =================================================================
+    match /users/{uid} {
+      function validProfileFields(d) {
+        return isText(d.displayName, 1, 32)
+          && isText(d.bio, 0, 190)
+          && isText(d.avatarEmoji, 1, 16)
+          && validColor(d.avatarColor);
+      }
+
+      allow get: if signedIn();
+      // busca por prefixo de username, no máximo 20 por consulta
+      allow list: if signedIn() && request.query.limit <= 20;
+
+      allow create: if isSelf(uid)
+        && request.resource.data.keys().hasOnly(
+             ['username', 'displayName', 'bio', 'avatarEmoji', 'avatarColor', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasAll(
+             ['username', 'displayName', 'bio', 'avatarEmoji', 'avatarColor', 'createdAt', 'updatedAt'])
+        && validUsername(request.resource.data.username)
+        && validProfileFields(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && !exists(usernamePath(request.resource.data.username))
+        && getAfter(usernamePath(request.resource.data.username)).data.uid == uid;
+
+      // username é imutável na v1; sem campos de privilégio no perfil
+      allow update: if isSelf(uid)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['displayName', 'bio', 'avatarEmoji', 'avatarColor', 'updatedAt'])
+        && validProfileFields(request.resource.data)
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if isSelf(uid)
+        && !existsAfter(usernamePath(resource.data.username));
+
+      // Configurações privadas (tema, notificações, silenciadas, presença)
+      match /private/{docId} {
+        function validSettings(d) {
+          return d.keys().hasOnly(
+                   ['theme', 'accent', 'notifications', 'mutedChats', 'presenceMode', 'showLastSeen', 'updatedAt'])
+            && d.keys().hasAll(['updatedAt'])
+            && d.updatedAt == request.time
+            && d.get('theme', 'dark') in ['dark', 'light']
+            && validColor(d.get('accent', '#23a559'))
+            && d.get('notifications', {}) is map
+            && d.get('notifications', {}).keys().hasOnly(['messages', 'mentions', 'sound'])
+            && d.get('notifications', {}).get('messages', true) is bool
+            && d.get('notifications', {}).get('mentions', true) is bool
+            && d.get('notifications', {}).get('sound', true) is bool
+            && d.get('mutedChats', []) is list
+            && d.get('mutedChats', []).size() <= 200
+            && d.get('presenceMode', 'online') in ['online', 'away', 'invisible']
+            && d.get('showLastSeen', true) is bool;
+        }
+        allow get, delete: if isSelf(uid) && docId == 'settings';
+        allow list: if false;
+        allow create, update: if isSelf(uid) && docId == 'settings'
+          && validSettings(request.resource.data);
+      }
+    }
+
+    // =================================================================
+    // blocks/{blockerUid_blockedUid}
+    // =================================================================
+    match /blocks/{blockId} {
+      allow get, list: if signedIn() && resource.data.blocker == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['blocker', 'blocked', 'createdAt'])
+        && request.resource.data.keys().hasAll(['blocker', 'blocked', 'createdAt'])
+        && request.resource.data.blocker == request.auth.uid
+        && request.resource.data.blocked is string
+        && request.resource.data.blocked != request.auth.uid
+        && blockId == request.auth.uid + '_' + request.resource.data.blocked
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.blocker == request.auth.uid;
+      allow update: if false;
+    }
+
+    // =================================================================
+    // friendRequests/{fromUid_toUid}
+    // =================================================================
+    match /friendRequests/{reqId} {
+      allow get, list: if signedIn()
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'status', 'createdAt'])
+        && request.resource.data.keys().hasAll(['from', 'to', 'status', 'createdAt'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to != request.auth.uid
+        && reqId == request.auth.uid + '_' + request.resource.data.to
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && exists(userPath(request.resource.data.to))
+        && !exists(blockPath(request.resource.data.to + '_' + request.auth.uid))
+        && !exists(blockPath(request.auth.uid + '_' + request.resource.data.to));
+
+      // somente o destinatário responde, uma única vez
+      allow update: if signedIn()
+        && resource.data.to == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
+        && request.resource.data.status in ['accepted', 'declined']
+        && request.resource.data.respondedAt == request.time;
+
+      // remetente cancela pendente/aceita; "declined" só o destinatário apaga
+      // (impede spam de reenvio logo após recusa)
+      allow delete: if signedIn()
+        && (resource.data.to == request.auth.uid
+            || (resource.data.from == request.auth.uid && resource.data.status != 'declined'));
+    }
+
+    // =================================================================
+    // friendships/{uidMenor_uidMaior}
+    // =================================================================
+    match /friendships/{pairId} {
+      function validNewFriendship(d) {
+        let me = request.auth.uid;
+        let other = d.users[0] == me ? d.users[1] : d.users[0];
+        let reqId = other + '_' + me;   // pedido enviado por "other" para mim
+        return d.keys().hasOnly(['users', 'createdAt'])
+          && d.keys().hasAll(['users', 'createdAt'])
+          && d.users is list
+          && d.users.size() == 2
+          && d.users[0] < d.users[1]
+          && pairId == d.users[0] + '_' + d.users[1]
+          && me in d.users
+          && d.createdAt == request.time
+          // o pedido existia pendente e é aceito NESTE batch
+          && exists(friendRequestPath(reqId))
+          && get(friendRequestPath(reqId)).data.status == 'pending'
+          && getAfter(friendRequestPath(reqId)).data.status == 'accepted'
+          && !exists(blockPath(other + '_' + me))
+          && !exists(blockPath(me + '_' + other));
+      }
+      allow get, list: if signedIn() && request.auth.uid in resource.data.users;
+      allow create: if signedIn() && validNewFriendship(request.resource.data);
+      allow delete: if signedIn() && request.auth.uid in resource.data.users;
+      allow update: if false;
+    }
+
+    // =================================================================
+    // conversations/{uidMenor_uidMaior} — SOMENTE conversas privadas (1:1)
+    // Grupos são comunidades com kind == 'group'.
+    // =================================================================
+    match /conversations/{convId} {
+      function validNewConversation(d) {
+        let me = request.auth.uid;
+        let other = d.participants[0] == me ? d.participants[1] : d.participants[0];
+        return d.keys().hasOnly(
+                 ['participants', 'createdAt', 'createdBy', 'lastMessageAt',
+                  'lastMessagePreview', 'lastSenderId', 'lastRead', 'blockedBy'])
+          && d.keys().hasAll(
+                 ['participants', 'createdAt', 'createdBy', 'lastMessageAt',
+                  'lastMessagePreview', 'lastSenderId', 'lastRead', 'blockedBy'])
+          && d.participants is list
+          && d.participants.size() == 2
+          && d.participants[0] < d.participants[1]
+          && convId == d.participants[0] + '_' + d.participants[1]
+          && me in d.participants
+          && d.createdBy == me
+          && d.createdAt == request.time
+          && d.lastMessageAt == null
+          && d.lastMessagePreview == null
+          && d.lastSenderId == null
+          && d.lastRead == {}
+          && d.blockedBy == {}
+          // só entre amigos e sem bloqueio em nenhuma direção
+          && exists(friendshipPath(convId))
+          && !exists(blockPath(me + '_' + other))
+          && !exists(blockPath(other + '_' + me));
+      }
+
+      function validConvUpdate(n, o) {
+        let me = request.auth.uid;
+        let other = o.participants[0] == me ? o.participants[1] : o.participants[0];
+        let changed = n.diff(o).affectedKeys();
+        let lastReadChanged = n.lastRead.diff(o.lastRead).affectedKeys();
+        let blockedChanged = n.blockedBy.diff(o.blockedBy).affectedKeys();
+        return changed.hasOnly(['lastMessageAt', 'lastMessagePreview', 'lastSenderId', 'lastRead', 'blockedBy'])
+          // prévia da última mensagem: só com horário do servidor, como remetente,
+          // e nunca em conversa bloqueada
+          && (!changed.hasAny(['lastMessageAt', 'lastMessagePreview', 'lastSenderId'])
+              || (n.lastMessageAt == request.time
+                  && n.lastSenderId == me
+                  && isText(n.lastMessagePreview, 0, 120)
+                  && o.blockedBy.size() == 0))
+          // "lido até": somente a própria chave, com horário do servidor
+          && n.lastRead is map
+          && lastReadChanged.hasOnly([me])
+          && (!(me in lastReadChanged) || n.lastRead[me] == request.time)
+          // bloqueio: somente a própria chave, coerente com blocks/{me_other}
+          && n.blockedBy is map
+          && blockedChanged.hasOnly([me])
+          && (!(me in n.blockedBy) || n.blockedBy[me] == true)
+          && (!(me in blockedChanged)
+              || existsAfter(blockPath(me + '_' + other)) == (me in n.blockedBy));
+      }
+
+      allow get, list: if signedIn() && request.auth.uid in resource.data.participants;
+      allow create: if signedIn() && validNewConversation(request.resource.data);
+      // `participants` NUNCA é alterável (não dá para adicionar terceiros)
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.participants
+        && validConvUpdate(request.resource.data, resource.data);
+      allow delete: if false;
+
+      match /messages/{mid} {
+        function convData() {
+          return get(convPath(convId)).data;
+        }
+        function isParticipant() {
+          return signedIn() && request.auth.uid in convData().participants;
+        }
+        function notBlocked() {
+          return convData().blockedBy.size() == 0;
+        }
+
+        allow get, list: if isParticipant();
+        allow create: if isParticipant() && notBlocked()
+          && validNewMessage(request.resource.data);
+        allow update: if isParticipant() && notBlocked()
+          && (isTextEdit() || isReactionUpdate());
+        allow delete: if isParticipant()
+          && resource.data.senderId == request.auth.uid;
+      }
+    }
+
+    // =================================================================
+    // communities/{cid} — comunidades (kind 'community') e grupos (kind 'group')
+    // =================================================================
+    match /communities/{cid} {
+      function validNewCommunity(d) {
+        return d.keys().hasOnly(
+                 ['name', 'description', 'kind', 'ownerId', 'avatarEmoji', 'avatarColor', 'createdAt'])
+          && d.keys().hasAll(
+                 ['name', 'description', 'kind', 'ownerId', 'avatarEmoji', 'avatarColor', 'createdAt'])
+          && isText(d.name, 1, 50)
+          && isText(d.description, 0, 200)
+          && d.kind in ['community', 'group']
+          && d.ownerId == request.auth.uid
+          && isText(d.avatarEmoji, 1, 16)
+          && validColor(d.avatarColor)
+          && d.createdAt == request.time;
+      }
+
+      allow get: if myRank(cid) >= 1;
+      // lista de comunidades do usuário: collectionGroup('members') where uid == me
+      allow list: if false;
+
+      // criação atômica: comunidade + membro-dono (+ canal inicial) no mesmo batch
+      allow create: if signedIn()
+        && validNewCommunity(request.resource.data)
+        && myRankAfter(cid) == 3;
+
+      // ownerId e kind são imutáveis; apenas admin edita dados de exibição
+      allow update: if signedIn()
+        && myRank(cid) == 3
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'description', 'avatarEmoji', 'avatarColor'])
+        && isText(request.resource.data.name, 1, 50)
+        && isText(request.resource.data.description, 0, 200)
+        && isText(request.resource.data.avatarEmoji, 1, 16)
+        && validColor(request.resource.data.avatarColor);
+
+      // v1: sem exclusão (sem Cloud Functions, subcoleções ficariam órfãs)
+      allow delete: if false;
+
+      // ---------------- members ----------------
+      match /members/{mUid} {
+        function validNewMember(d) {
+          return d.keys().hasOnly(['uid', 'role', 'joinedAt', 'inviteCode', 'timeoutUntil'])
+            && d.keys().hasAll(['uid', 'role', 'joinedAt', 'inviteCode', 'timeoutUntil'])
+            && d.uid == mUid
+            && d.joinedAt == request.time
+            && d.timeoutUntil == null;
+        }
+        // convite válido E consumido (uses+1) neste mesmo batch
+        function validInvite(code) {
+          let inv = get(invitePath(cid, code)).data;
+          return inv.revoked == false
+            && inv.expiresAt > request.time
+            && inv.uses < inv.maxUses
+            && getAfter(invitePath(cid, code)).data.uses == inv.uses + 1;
+        }
+
+        allow get, list: if myRank(cid) >= 1;
+
+        allow create: if signedIn()
+          && mUid == request.auth.uid
+          && validNewMember(request.resource.data)
+          && !exists(banPath(cid, mUid))
+          && (
+            // (A) dono: comunidade nova neste batch
+            (!exists(communityPath(cid))
+              && request.resource.data.role == 'admin'
+              && request.resource.data.inviteCode == null
+              && getAfter(communityPath(cid)).data.ownerId == request.auth.uid)
+            ||
+            // (B) entrada por convite: sempre como "member"
+            (exists(communityPath(cid))
+              && request.resource.data.role == 'member'
+              && request.resource.data.inviteCode is string
+              && validInvite(request.resource.data.inviteCode))
+          );
+
+        allow update: if signedIn() && (
+          // (1) mudança de papel: só admin; admin novo/rebaixar admin só o dono;
+          //     ninguém altera o próprio papel nem o do dono
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+            && myRank(cid) == 3
+            && mUid != request.auth.uid
+            && mUid != get(communityPath(cid)).data.ownerId
+            && validRoleName(request.resource.data.role)
+            && (isOwner(cid)
+                || (resource.data.role != 'admin' && request.resource.data.role != 'admin')))
+          ||
+          // (2) silenciar (timeout) até 28 dias: moderador+ sobre rank menor
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['timeoutUntil'])
+            && myRank(cid) >= 2
+            && mUid != request.auth.uid
+            && mUid != get(communityPath(cid)).data.ownerId
+            && (myRank(cid) > roleRank(resource.data.role) || isOwner(cid))
+            && (request.resource.data.timeoutUntil == null
+                || (request.resource.data.timeoutUntil is timestamp
+                    && request.resource.data.timeoutUntil > request.time
+                    && request.resource.data.timeoutUntil <= request.time + duration.value(28, 'd'))))
+        );
+
+        // sair (exceto dono) ou remover (moderador+ sobre rank menor)
+        allow delete: if signedIn()
+          && mUid != get(communityPath(cid)).data.ownerId
+          && (mUid == request.auth.uid
+              || (myRank(cid) >= 2
+                  && (myRank(cid) > roleRank(resource.data.role) || isOwner(cid))));
+      }
+
+      // ---------------- bans ----------------
+      match /bans/{bUid} {
+        allow get, list: if myRank(cid) >= 2;
+        allow create: if signedIn()
+          && myRank(cid) >= 2
+          && request.resource.data.keys().hasOnly(['uid', 'bannedBy', 'reason', 'createdAt'])
+          && request.resource.data.keys().hasAll(['uid', 'bannedBy', 'reason', 'createdAt'])
+          && request.resource.data.uid == bUid
+          && request.resource.data.bannedBy == request.auth.uid
+          && isText(request.resource.data.reason, 0, 200)
+          && request.resource.data.createdAt == request.time
+          && bUid != request.auth.uid
+          && bUid != get(communityPath(cid)).data.ownerId
+          && (myRank(cid) > rankOf(cid, bUid) || isOwner(cid));
+        allow update: if false;
+        allow delete: if signedIn() && myRank(cid) >= 2;
+      }
+
+      // ---------------- invites ----------------
+      match /invites/{code} {
+        function staffRevoke() {
+          return myRank(cid) >= 2
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['revoked'])
+            && request.resource.data.revoked == true;
+        }
+        // quem entra incrementa uses em 1, no mesmo batch em que cria seu membro
+        function joinerConsume() {
+          let o = resource.data;
+          let n = request.resource.data;
+          let me = request.auth.uid;
+          return n.diff(o).affectedKeys().hasOnly(['uses'])
+            && n.uses == o.uses + 1
+            && n.uses <= o.maxUses
+            && o.revoked == false
+            && o.expiresAt > request.time
+            && !exists(memberPath(cid, me))
+            && existsAfter(memberPath(cid, me))
+            && getAfter(memberPath(cid, me)).data.inviteCode == code
+            && getAfter(memberPath(cid, me)).data.role == 'member';
+        }
+
+        // o código (>=16 caracteres aleatórios) funciona como capacidade
+        allow get: if signedIn();
+        allow list: if myRank(cid) >= 2;
+
+        allow create: if signedIn()
+          && myRank(cid) >= 2
+          && code.matches('^[A-Za-z0-9]{16,64}$')
+          && request.resource.data.keys().hasOnly(
+               ['createdBy', 'communityName', 'expiresAt', 'maxUses', 'uses', 'revoked', 'createdAt'])
+          && request.resource.data.keys().hasAll(
+               ['createdBy', 'communityName', 'expiresAt', 'maxUses', 'uses', 'revoked', 'createdAt'])
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.communityName == get(communityPath(cid)).data.name
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(30, 'd')
+          && request.resource.data.maxUses is int
+          && request.resource.data.maxUses >= 1
+          && request.resource.data.maxUses <= 100
+          && request.resource.data.uses == 0
+          && request.resource.data.revoked == false
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if signedIn() && (staffRevoke() || joinerConsume());
+        allow delete: if signedIn() && myRank(cid) >= 2;
+      }
+
+      // ---------------- channels ----------------
+      match /channels/{chid} {
+        function validChannel(d) {
+          return d.keys().hasOnly(['name', 'topic', 'type', 'readRole', 'writeRole', 'position', 'createdBy', 'createdAt'])
+            && d.keys().hasAll(['name', 'topic', 'type', 'readRole', 'writeRole', 'position', 'createdBy', 'createdAt'])
+            && isText(d.name, 1, 32)
+            && isText(d.topic, 0, 200)
+            && d.type == 'text'
+            && validRoleName(d.readRole)
+            && validRoleName(d.writeRole)
+            && roleRank(d.writeRole) >= roleRank(d.readRole)
+            && d.position is int && d.position >= 0 && d.position <= 200
+            && d.createdBy == request.auth.uid
+            && d.createdAt == request.time;
+        }
+
+        // lista de canais visível a todos os membros; mensagens obedecem readRole
+        allow get, list: if myRank(cid) >= 1;
+        allow create: if signedIn() && myRankAfter(cid) == 3 && validChannel(request.resource.data);
+        allow update: if signedIn()
+          && myRank(cid) == 3
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['name', 'topic', 'readRole', 'writeRole', 'position'])
+          && isText(request.resource.data.name, 1, 32)
+          && isText(request.resource.data.topic, 0, 200)
+          && validRoleName(request.resource.data.readRole)
+          && validRoleName(request.resource.data.writeRole)
+          && roleRank(request.resource.data.writeRole) >= roleRank(request.resource.data.readRole)
+          && request.resource.data.position is int
+          && request.resource.data.position >= 0
+          && request.resource.data.position <= 200;
+        allow delete: if signedIn() && myRank(cid) == 3;
+
+        match /messages/{mid} {
+          function canRead() {
+            return myRank(cid) >= 1
+              && myRank(cid) >= roleRank(get(channelPath(cid, chid)).data.readRole);
+          }
+          function canWrite() {
+            return myRank(cid) >= 1
+              && myRank(cid) >= roleRank(get(channelPath(cid, chid)).data.writeRole);
+          }
+          function notTimedOut() {
+            let t = get(memberPath(cid, request.auth.uid)).data.timeoutUntil;
+            return t == null || t <= request.time;
+          }
+
+          allow get, list: if signedIn() && canRead();
+          allow create: if signedIn() && canWrite() && notTimedOut()
+            && validNewMessage(request.resource.data);
+          // edição: autor e ainda com permissão de escrita; reação: qualquer leitor
+          allow update: if signedIn()
+            && ((canWrite() && notTimedOut() && isTextEdit())
+                || (canRead() && isReactionUpdate()));
+          // apagar: autor, ou moderador+ (moderação)
+          allow delete: if signedIn() && canRead()
+            && (resource.data.senderId == request.auth.uid || myRank(cid) >= 2);
+        }
+      }
+    }
+
+    // Consulta de grupo de coleção: "minhas comunidades" (só os próprios docs)
+    match /{path=**}/members/{memberId} {
+      allow list: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // =================================================================
+    // reports/{reporterUid_targetKey} — denúncias (uma por alvo por denunciante)
+    // =================================================================
+    match /reports/{reportId} {
+      function validReport(d) {
+        return d.keys().hasOnly(
+                 ['reporterId', 'targetType', 'targetKey', 'targetUserId', 'communityId',
+                  'channelId', 'conversationId', 'reason', 'details', 'snapshot', 'status', 'createdAt'])
+          && d.keys().hasAll(
+                 ['reporterId', 'targetType', 'targetKey', 'targetUserId', 'communityId',
+                  'channelId', 'conversationId', 'reason', 'details', 'snapshot', 'status', 'createdAt'])
+          && d.reporterId == request.auth.uid
+          && d.targetType in ['user', 'message']
+          && isText(d.targetKey, 1, 80)
+          && reportId == request.auth.uid + '_' + d.targetKey
+          && isText(d.targetUserId, 1, 128)
+          && d.targetUserId != request.auth.uid
+          && (d.communityId == null || (d.communityId is string && myRank(d.communityId) >= 1))
+          && (d.channelId == null || isText(d.channelId, 1, 128))
+          && (d.conversationId == null || (d.conversationId is string && request.auth.uid in d.conversationId.split('_')))
+          && d.reason in ['spam', 'assedio', 'odio', 'violencia', 'conteudo_improprio', 'outro']
+          && isText(d.details, 0, 500)
+          && (d.snapshot == null || isText(d.snapshot, 0, 2000))
+          && d.status == 'open'
+          && d.createdAt == request.time;
+      }
+      function isReportStaff() {
+        return isGlobalAdmin()
+          || (resource.data.get('communityId', null) != null
+              && myRank(resource.data.communityId) >= 2);
+      }
+
+      allow create: if signedIn() && validReport(request.resource.data);
+
+      // O denunciante lê as próprias; staff da comunidade / admin global leem as suas.
+      // Consultas de staff DEVEM filtrar por communityId (ou ser admin global).
+      allow get, list: if signedIn()
+        && (resource.data.reporterId == request.auth.uid || isReportStaff());
+
+      allow update: if signedIn() && isReportStaff()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'reviewedBy', 'reviewedAt'])
+        && request.resource.data.status in ['reviewing', 'resolved', 'dismissed']
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    // =================================================================
+    // NEGAÇÃO POR PADRÃO — qualquer caminho não listado acima
+    // =================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

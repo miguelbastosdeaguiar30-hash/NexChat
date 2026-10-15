@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101318">
+<meta name="description" content="NexChat — converse, encontre seus amigos e crie sua comunidade.">
+<title>NexChat</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0f14;--panel:#121720;--panel2:#171e29;--panel3:#202a38;--line:#293443;--text:#eef3f8;--muted:#93a1b3;--green:#27d68a;--green2:#18b979;--red:#ff667c;--blue:#75a7ff;--shadow:0 24px 70px #0007}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,textarea{font:inherit}button{cursor:pointer;border:0;color:inherit}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--green);outline-offset:2px}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.eyebrow{color:var(--green);font-size:11px;letter-spacing:.16em;font-weight:800;text-transform:uppercase}.btn{border-radius:12px;padding:11px 15px;font-weight:750;transition:.15s transform,.15s background}.btn:active{transform:scale(.98)}.primary{background:var(--green);color:#052015}.primary:hover{background:#4ce7a2}.secondary{background:var(--panel3);border:1px solid var(--line)}.danger{background:#3a2029;color:#ffb5c0}.icon-btn{height:40px;min-width:40px;border-radius:12px;background:transparent;color:var(--muted);display:inline-grid;place-items:center;font-size:19px}.icon-btn:hover{background:var(--panel3);color:var(--text)}.field{width:100%;border:1px solid var(--line);background:#0e131a;color:var(--text);padding:13px 14px;border-radius:12px;outline:none}.field:focus{border-color:#27d68a88;box-shadow:0 0 0 3px #27d68a12}.label{display:block;font-size:12px;color:#b7c2d1;font-weight:700;margin:0 0 7px}.field-wrap{margin:13px 0}.app{height:100dvh;min-height:0;display:grid;grid-template-columns:76px 280px minmax(0,1fr);overflow:hidden;background:var(--bg)}.rail{background:#0a0d12;border-right:1px solid #202733;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:11px}.brand-mark{width:44px;height:44px;border-radius:15px;background:linear-gradient(140deg,#48efac,#14a86b);display:grid;place-items:center;color:#062317;font-size:23px;font-weight:1000;box-shadow:0 8px 24px #27d68a24;margin-bottom:16px}.rail-btn{width:48px;height:48px;border-radius:16px;background:#161c25;color:#9ba9ba;font-size:21px;position:relative;transition:.18s}.rail-btn:hover,.rail-btn.active{border-radius:13px;background:var(--green);color:#062317}.rail-btn.active:before{content:"";position:absolute;left:-14px;top:10px;height:28px;width:4px;border-radius:0 4px 4px 0;background:var(--green)}.rail-spacer{flex:1}.side{min-width:0;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column}.side-head{padding:23px 18px 15px}.wordmark{font-size:22px;font-weight:900;letter-spacing:-.05em}.wordmark span{color:var(--green)}.side-head p{margin:4px 0 15px;color:var(--muted);font-size:12px}.search{position:relative}.search input{padding-left:38px}.search:before{content:"⌕";position:absolute;left:13px;top:6px;color:var(--muted);font-size:25px;z-index:1}.side-section{padding:9px 12px 0}.section-title{display:flex;justify-content:space-between;align-items:center;padding:8px 7px;color:#8d9bad;font-size:10px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}.section-title button{font-size:17px;color:var(--green);background:transparent}.side-list{display:flex;flex-direction:column;gap:4px}.nav-item{display:flex;align-items:center;gap:11px;text-align:left;background:transparent;border-radius:12px;padding:10px;color:#b8c4d2;min-width:0}.nav-item:hover{background:#1c2531}.nav-item.active{background:#1d302d;color:#eafff5}.nav-item .nav-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:#263241;color:var(--green);font-size:17px}.nav-item.active .nav-icon{background:var(--green);color:#062317}.nav-copy{min-width:0;flex:1}.nav-name{font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pill{font-size:10px;border-radius:20px;background:#263241;color:#c9d4e2;padding:3px 7px}.side-bottom{margin-top:auto;border-top:1px solid var(--line);padding:12px}.me-row{display:flex;align-items:center;gap:10px;min-width:0}.avatar{width:42px;height:42px;flex:0 0 42px;border-radius:15px;display:grid;place-items:center;font-size:21px;background:#24352e;border:1px solid #3a584b;position:relative}.avatar.online:after{content:"";position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;background:var(--green);border:2px solid var(--panel);border-radius:50%}.me-copy{min-width:0;flex:1}.me-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.me-handle{font-size:11px;color:var(--muted)}.main{min-width:0;display:flex;flex-direction:column;position:relative;background:radial-gradient(ellipse at 85% 0%,#1c2c2a33,transparent 42%),var(--bg)}.topbar{height:72px;flex:0 0 72px;display:flex;align-items:center;gap:13px;padding:0 25px;border-bottom:1px solid var(--line);background:#10151dcc;backdrop-filter:blur(14px)}.top-title{min-width:0;flex:1}.top-title h1{font-size:16px;margin:0;font-weight:850}.top-title p{font-size:11px;margin:2px 0 0;color:var(--muted)}.top-actions{display:flex;align-items:center;gap:6px}.mobile-back{display:none}.messages{flex:1;min-height:0;overflow:auto;padding:26px clamp(14px,4vw,52px);display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}.welcome{max-width:670px;margin:auto;text-align:center;padding:35px 20px}.welcome-orb{width:92px;height:92px;border-radius:30px;margin:0 auto 23px;background:linear-gradient(140deg,#2de79a,#12744f);display:grid;place-items:center;color:#052015;font-size:44px;box-shadow:0 16px 60px #27d68a26;transform:rotate(-5deg)}.welcome h2{font-size:clamp(26px,4vw,42px);line-height:1.06;letter-spacing:-.05em;margin:0 0 14px}.welcome h2 em{font-style:normal;color:var(--green)}.welcome p{color:var(--muted);max-width:440px;margin:0 auto 22px}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:32px;text-align:left}.feature{border:1px solid var(--line);background:#141b24b8;border-radius:16px;padding:14px}.feature b{display:block;font-size:12px;margin:8px 0 4px}.feature span{font-size:11px;color:var(--muted)}.feature-icon{font-size:20px}.msg{display:flex;gap:11px;max-width:850px;width:100%;margin:0 auto;align-items:flex-start}.msg .avatar{width:36px;height:36px;flex-basis:36px;border-radius:12px;font-size:17px}.msg-body{min-width:0;flex:1}.msg-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:1px 0 4px}.msg-author{font-size:13px;font-weight:850}.msg-time{font-size:10px;color:#718095}.msg-text{white-space:pre-wrap;overflow-wrap:anywhere;color:#dbe4ed;font-size:14px}.composer-wrap{padding:0 clamp(14px,4vw,52px) 19px}.composer{max-width:850px;margin:0 auto;border:1px solid #334151;background:#171e28;border-radius:17px;padding:10px 12px;display:flex;align-items:flex-end;gap:9px;box-shadow:0 12px 40px #0002}.composer textarea{flex:1;resize:none;max-height:130px;min-height:36px;border:0;outline:0;background:transparent;color:var(--text);padding:8px 2px}.composer textarea::placeholder{color:#77869a}.send-btn{height:39px;width:42px;border-radius:12px;background:var(--green);color:#062317;font-size:20px;font-weight:900}.composer-note{max-width:850px;margin:8px auto 0;text-align:center;font-size:10px;color:#647287}.empty-list{padding:20px 14px;text-align:center;font-size:12px;color:var(--muted);line-height:1.7}.toast{position:fixed;z-index:50;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:.25s;background:#eafcf4;color:#092519;padding:12px 17px;border-radius:13px;box-shadow:var(--shadow);font-size:13px;font-weight:800;max-width:90vw}.toast.show{opacity:1;transform:translate(-50%,0)}.modal-backdrop{position:fixed;inset:0;z-index:30;background:#030609c9;backdrop-filter:blur(10px);display:grid;place-items:center;padding:16px}.modal{width:min(460px,100%);max-height:90dvh;overflow:auto;border:1px solid #2d3947;background:#121821;border-radius:24px;padding:26px;box-shadow:var(--shadow)}.modal h2{font-size:24px;letter-spacing:-.04em;margin:6px 0}.modal p{color:var(--muted);font-size:13px;margin:0 0 17px}.modal-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.modal-brand .brand-mark{margin:0}.modal-brand strong{font-size:18px}.modal-brand small{display:block;color:var(--muted);font-size:11px}.form-actions{display:flex;flex-direction:column;gap:9px;margin-top:17px}.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}.separator{display:flex;align-items:center;gap:10px;color:#718095;font-size:11px;margin:14px 0}.separator:before,.separator:after{content:"";height:1px;flex:1;background:var(--line)}.text-btn{background:transparent;color:var(--green);font-weight:800;padding:8px}.link-row{text-align:center;font-size:12px;color:var(--muted);margin-top:15px}.error{background:#3a2029;border:1px solid #69303e;color:#ffb8c3;padding:10px 12px;border-radius:10px;font-size:12px;margin-top:10px}.status-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#8ff3c4;background:#17352b;border:1px solid #285a45;padding:5px 9px;border-radius:20px}.status-chip:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green)}.content-page{padding:clamp(18px,4vw,38px);overflow:auto}.page-heading{display:flex;align-items:flex-start;gap:15px;justify-content:space-between;margin-bottom:24px}.page-heading h2{font-size:27px;letter-spacing:-.04em;margin:0}.page-heading p{color:var(--muted);font-size:13px;margin:5px 0}.panel-card{background:#141a23;border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:15px;max-width:780px}.panel-card h3{font-size:15px;margin:0 0 6px}.panel-card p{font-size:12px;color:var(--muted);margin:0 0 15px}.person-row{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid #26303d}.person-row:last-child{border-bottom:0}.person-row .person-info{flex:1;min-width:0}.person-row b{font-size:13px;display:block}.person-row small{font-size:11px;color:var(--muted)}.person-actions{display:flex;gap:6px;align-items:center}.mini-btn{border-radius:9px;background:#253140;padding:8px 10px;font-size:11px;font-weight:800}.mini-btn.green{background:var(--green);color:#052015}.mini-btn.red{background:#3b222a;color:#ffb6c0}.notice{border:1px solid #344b45;background:#14251f;padding:13px 14px;border-radius:12px;color:#b9f8d9;font-size:12px;margin:12px 0}.profile-hero{display:flex;align-items:center;gap:16px;margin-bottom:20px}.profile-hero .avatar{width:66px;height:66px;flex-basis:66px;font-size:30px;border-radius:21px}.profile-hero h3{margin:0;font-size:18px}.profile-hero p{margin:4px 0 0;color:var(--muted);font-size:12px}.mobile-bottom{display:none}.mobile-overlay{display:none}
+@media(max-width:950px){.app{grid-template-columns:66px 235px minmax(0,1fr)}.side-head{padding:20px 13px 12px}.topbar{padding:0 16px}.top-actions .optional{display:none}.feature-grid{grid-template-columns:1fr}.feature{display:flex;align-items:center;gap:10px}.feature b{margin:0 0 3px}}
+@media(max-width:700px){.app{grid-template-columns:1fr;position:relative}.rail{display:none}.side{position:absolute;inset:0;z-index:4;border:0;display:flex;transition:transform .22s ease}.side.closed{transform:translateX(-102%)}.side-head{padding:21px 18px 14px}.main{grid-column:1}.topbar{height:64px;flex-basis:64px;padding:0 12px;gap:9px}.mobile-back{display:inline-grid}.top-title h1{font-size:14px}.top-title p{font-size:10px}.messages{padding:20px 13px}.composer-wrap{padding:0 10px calc(76px + env(safe-area-inset-bottom))}.composer{padding:8px 9px;border-radius:15px}.composer-note{display:none}.mobile-bottom{display:flex;position:absolute;bottom:0;left:0;right:0;height:64px;padding-bottom:env(safe-area-inset-bottom);background:#10151df2;border-top:1px solid var(--line);z-index:3;justify-content:space-around;align-items:center;backdrop-filter:blur(15px)}.mobile-bottom button{display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;color:#8291a4;font-size:18px;min-width:58px}.mobile-bottom button span{font-size:9px;font-weight:700}.mobile-bottom button.active{color:var(--green)}.feature-grid{grid-template-columns:1fr}.welcome{padding:28px 12px}.welcome-orb{width:76px;height:76px;font-size:36px}.welcome h2{font-size:31px}.top-actions .icon-btn{min-width:34px}.content-page{padding:20px 14px 85px}.page-heading h2{font-size:24px}.panel-card{padding:15px}.modal{padding:22px 18px}.mobile-overlay.show{display:block;position:absolute;inset:0;z-index:3;background:#0007}.side-bottom{padding-bottom:calc(12px + env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" aria-label="Navegação principal">
+    <div class="brand-mark">N</div>
+    <button class="rail-btn active" data-page="chats" title="Conversas">▤</button>
+    <button class="rail-btn" data-page="friends" title="Amigos">♧</button>
+    <button class="rail-btn" data-page="communities" title="Comunidades">◈</button>
+    <div class="rail-spacer"></div>
+    <button class="rail-btn" data-page="settings" title="Configurações">⚙</button>
+  </aside>
+  <aside class="side" id="sidePanel">
+    <div class="side-head">
+      <div class="wordmark">Nex<span>Chat</span></div>
+      <p>Seu canto. Sua galera. Sua conversa.</p>
+      <div class="search"><input class="field" id="sidebarSearch" placeholder="Buscar conversas..." aria-label="Buscar conversas"></div>
+    </div>
+    <div class="side-section">
+      <div class="section-title">Espaço pessoal <button data-page="friends" title="Adicionar amigos">＋</button></div>
+      <div class="side-list">
+        <button class="nav-item active" data-page="chats"><span class="nav-icon">▤</span><span class="nav-copy"><span class="nav-name">Mensagens</span><span class="nav-sub">Seus papos privados</span></span></button>
+        <button class="nav-item" data-page="friends"><span class="nav-icon">♧</span><span class="nav-copy"><span class="nav-name">Amigos</span><span class="nav-sub">Sua lista e solicitações</span></span></button>
+        <button class="nav-item" data-page="communities"><span class="nav-icon">◈</span><span class="nav-copy"><span class="nav-name">Comunidades</span><span class="nav-sub">Grupos e espaços</span></span><span class="pill">BETA</span></button>
+      </div>
+    </div>
+    <div class="side-section">
+      <div class="section-title">Conversas recentes <button id="refreshChats" title="Atualizar">↻</button></div>
+      <div class="side-list" id="chatList"><div class="empty-list">Entre na sua conta para carregar suas conversas.</div></div>
+    </div>
+    <div class="side-bottom">
+      <div class="me-row">
+        <div class="avatar" id="myAvatar">✦</div>
+        <div class="me-copy"><div class="me-name" id="myName">Visitante</div><div class="me-handle" id="myHandle">Entre para começar</div></div>
+        <button class="icon-btn" data-page="settings" aria-label="Configurações">⚙</button>
+      </div>
+    </div>
+  </aside>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn mobile-back" id="showSidebar" aria-label="Abrir menu">☰</button>
+      <div class="top-title"><h1 id="topTitle">Bem-vindo ao NexChat</h1><p id="topSubtitle">Conecte-se com quem importa.</p></div>
+      <div class="top-actions">
+        <span class="status-chip optional" id="connectionStatus">Modo convidado</span>
+        <button class="icon-btn" id="headerAddFriend" title="Adicionar amigo">♧</button>
+        <button class="icon-btn" id="headerProfile" title="Perfil">☺</button>
+      </div>
+    </header>
+    <section class="messages" id="mainContent">
+      <div class="welcome">
+        <div class="welcome-orb">N</div>
+        <div class="eyebrow">A sua nova central de conversas</div>
+        <h2>Menos distância.<br><em>Mais conexão.</em></h2>
+        <p>Um espaço feito pra sua galera: converse em particular, encontre amigos e, em breve, junte todo mundo em comunidades.</p>
+        <button class="btn primary" id="welcomeStart">Entrar ou criar conta&nbsp; ↗</button>
+        <div class="feature-grid">
+          <div class="feature"><span class="feature-icon">⚡</span><div><b>Conversa em tempo real</b><span>Mensagens sincronizadas pelo Firebase.</span></div></div>
+          <div class="feature"><span class="feature-icon">🛡️</span><div><b>Conta protegida</b><span>Recursos privados exigem e-mail verificado.</span></div></div>
+          <div class="feature"><span class="feature-icon">♧</span><div><b>Feito pra sua galera</b><span>Adicione amigos e abra um papo direto.</span></div></div>
+        </div>
+      </div>
+    </section>
+    <div class="composer-wrap hidden" id="composerWrap">
+      <div class="composer">
+        <button class="icon-btn" id="attachButton" title="Anexos: em breve">＋</button>
+        <textarea id="messageInput" rows="1" maxlength="2000" placeholder="Escolha uma conversa para começar..." disabled aria-label="Mensagem"></textarea>
+        <button class="send-btn" id="sendButton" disabled aria-label="Enviar mensagem">➤</button>
+      </div>
+      <div class="composer-note">Enter envia · Shift + Enter quebra linha · Respeite a sua galera 💚</div>
+    </div>
+    <nav class="mobile-bottom" aria-label="Navegação móvel">
+      <button class="active" data-page="chats">▤<span>Papos</span></button>
+      <button data-page="friends">♧<span>Amigos</span></button>
+      <button data-page="communities">◈<span>Grupos</span></button>
+      <button data-page="settings">⚙<span>Ajustes</span></button>
+    </nav>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modal-backdrop" id="authBackdrop">
+  <div class="modal">
+    <div class="modal-brand"><div class="brand-mark">N</div><div><strong>Nex<span style="color:var(--green)">Chat</span></strong><small>Seu espaço de conversa</small></div></div>
+    <div id="authFormArea">
+      <div class="eyebrow">Bora se conectar?</div><h2 id="authTitle">Entre na sua conta</h2>
+      <p id="authDescription">Entre para conversar com seus amigos ou crie sua conta grátis.</p>
+      <form id="authForm">
+        <div class="field-wrap"><label class="label" for="authEmail">E-mail</label><input class="field" id="authEmail" type="email" autocomplete="email" required maxlength="254" placeholder="voce@email.com"></div>
+        <div class="field-wrap"><label class="label" for="authPassword">Senha</label><input class="field" id="authPassword" type="password" autocomplete="current-password" required minlength="6" maxlength="128" placeholder="Mínimo de 6 caracteres"></div>
+        <div class="field-wrap hidden" id="confirmPasswordWrap"><label class="label" for="authPassword2">Confirmar senha</label><input class="field" id="authPassword2" type="password" autocomplete="new-password" minlength="6" maxlength="128" placeholder="Digite a senha novamente"></div>
+        <div class="error hidden" id="authError"></div>
+        <div class="form-actions"><button class="btn primary" type="submit" id="authSubmit">Entrar</button><button class="btn secondary" type="button" id="googleButton">◎ &nbsp; Continuar com Google</button></div>
+      </form>
+      <div class="link-row"><span id="authSwitchText">Ainda não tem conta?</span> <button class="text-btn" id="authSwitch">Criar conta</button></div>
+      <div class="link-row"><button class="text-btn" id="forgotPassword">Esqueci minha senha</button></div>
+      <div class="separator">GRÁTIS PARA COMEÇAR</div>
+      <div class="small muted">🔒 Nunca compartilhe sua senha. O NexChat não pede códigos de verificação no chat.</div>
+    </div>
+    <div id="profileFormArea" class="hidden">
+      <div class="eyebrow">Último passo</div><h2>Monte seu perfil</h2><p>Escolha como sua galera vai encontrar você.</p>
+      <form id="profileForm">
+        <div class="field-wrap"><label class="label" for="profileName">Nome de exibição</label><input class="field" id="profileName" required minlength="1" maxlength="32" placeholder="Como querem te chamar?"></div>
+        <div class="field-wrap"><label class="label" for="profileUsername">Nome de usuário (único)</label><input class="field" id="profileUsername" required minlength="3" maxlength="20" pattern="[a-z0-9_]{3,20}" placeholder="ex: miguel_123"><div class="small muted" style="margin-top:6px">Só letras minúsculas, números e _ (3–20 caracteres).</div></div>
+        <div class="split"><div class="field-wrap"><label class="label" for="profileEmoji">Avatar</label><select class="field" id="profileEmoji"><option>😎</option><option>👾</option><option>🐸</option><option>🐱</option><option>🐼</option><option>🦊</option><option>🤖</option><option>🌟</option><option>🎮</option><option>🦈</option></select></div><div class="field-wrap"><label class="label" for="profileColor">Cor do avatar</label><input class="field" id="profileColor" type="color" value="#27d68a" style="height:46px;padding:5px"></div></div>
+        <div class="field-wrap"><label class="label" for="profileBio">Bio (opcional)</label><input class="field" id="profileBio" maxlength="190" placeholder="Um pouquinho sobre você..."></div>
+        <div class="error hidden" id="profileError"></div><div class="form-actions"><button class="btn primary" type="submit" id="profileSubmit">Criar meu perfil</button></div>
+      </form>
+    </div>
+    <div class="link-row"><button class="text-btn" id="closeAuth">Agora não</button></div>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendPasswordResetEmail, signOut, reload } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, where, orderBy, limit, onSnapshot, writeBatch, serverTimestamp, updateDoc, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBdLAvZGx0rQ9ImHXibJPdgSczqg38kN0I",
+  authDomain: "nexchat-58d82.firebaseapp.com",
+  projectId: "nexchat-58d82",
+  storageBucket: "nexchat-58d82.firebasestorage.app",
+  messagingSenderId: "314466722554",
+  appId: "1:314466722554:web:853a9792885c443cd5df43",
+  measurementId: "G-QFHN5873N3"
+};
+// Firebase Web config não é senha. A proteção real fica nas Security Rules.
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
+
+const $ = (id) => document.getElementById(id);
+const state = { user:null, profile:null, page:"chats", activeConv:null, activeFriend:null, unsubMessages:null, unsubChats:null, unsubRequests:null, unsubFriends:null, conversations:[], friends:[], requests:[], authMode:"login", profilePending:false, allUsers:[] };
+const esc = (s="") => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pairId = (a,b) => [a,b].sort().join("_");
+const toast = (message) => { $("toast").textContent=message; $("toast").classList.add("show"); clearTimeout(toast.timer); toast.timer=setTimeout(()=>$("toast").classList.remove("show"),3000); };
+const showError = (id,message) => { const e=$(id); e.textContent=message; e.classList.remove("hidden"); };
+const hideError = (id) => $(id).classList.add("hidden");
+function firebaseError(err) {
+  const map = {
+    "auth/invalid-credential":"E-mail ou senha incorretos.",
+    "auth/user-not-found":"Conta não encontrada.",
+    "auth/wrong-password":"E-mail ou senha incorretos.",
+    "auth/email-already-in-use":"Esse e-mail já tem uma conta.",
+    "auth/weak-password":"Escolha uma senha mais forte (mínimo de 6 caracteres).",
+    "auth/invalid-email":"Esse e-mail parece inválido.",
+    "auth/popup-closed-by-user":"A janela do Google foi fechada.",
+    "auth/popup-blocked":"O navegador bloqueou a janela. Tente de novo.",
+    "auth/network-request-failed":"Sem conexão com a internet. Tente novamente.",
+    "auth/too-many-requests":"Muitas tentativas. Espere um pouco e tente novamente.",
+    "permission-denied":"Acesso negado pelas regras do Firebase. Verifique se publicou as regras corretas.",
+    "failed-precondition":"O Firebase pediu um índice ou uma configuração que ainda falta."
+  };
+  return map[err?.code] || err?.message || "Algo deu errado. Tente novamente.";
+}
+function showAuth(mode="login") {
+  state.authMode=mode; $("authBackdrop").classList.remove("hidden"); $("authFormArea").classList.remove("hidden"); $("profileFormArea").classList.add("hidden");
+  $("authTitle").textContent=mode==="signup"?"Crie sua conta":"Entre na sua conta";
+  $("authDescription").textContent=mode==="signup"?"É grátis. Depois, escolha seu nome de usuário.":"Entre para conversar com seus amigos ou crie sua conta grátis.";
+  $("authSubmit").textContent=mode==="signup"?"Criar conta":"Entrar";
+  $("authSwitchText").textContent=mode==="signup"?"Já tem conta?":"Ainda não tem conta?";
+  $("authSwitch").textContent=mode==="signup"?"Entrar":"Criar conta";
+  $("confirmPasswordWrap").classList.toggle("hidden",mode!=="signup");
+  $("forgotPassword").classList.toggle("hidden",mode==="signup");
+  hideError("authError");
+}
+function closeAuth(){ $("authBackdrop").classList.add("hidden"); }
+function profileSetup(user) {
+  state.profilePending=true;
+  $("authFormArea").classList.add("hidden"); $("profileFormArea").classList.remove("hidden"); $("authBackdrop").classList.remove("hidden");
+  $("profileName").value=user.displayName || user.email?.split("@")[0] || "";
+  $("profileUsername").value=(user.email?.split("@")[0]||"usuario").toLowerCase().replace(/[^a-z0-9_]/g,"_").slice(0,20);
+  $("profileUsername").value=$("profileUsername").value.padEnd(3,"_").slice(0,20);
+}
+function setMyProfile(profile) {
+  state.profile=profile;
+  $("myName").textContent=profile.displayName||"Pessoa do NexChat";
+  $("myHandle").textContent="@"+(profile.username||"");
+  $("myAvatar").textContent=profile.avatarEmoji||"✦";
+  $("myAvatar").style.background=profile.avatarColor||"#24352e";
+  $("connectionStatus").textContent="Conectado";
+}
+function setPage(page) {
+  state.page=page;
+  document.querySelectorAll("[data-page]").forEach(el=>el.classList.toggle("active",el.dataset.page===page));
+  $("sidePanel").classList.add("closed"); $("mobileOverlay").classList.remove("show");
+  if(page==="chats"){ renderChatLanding(); }
+  else if(page==="friends"){ renderFriendsPage(); }
+  else if(page==="communities"){ renderCommunitiesPage(); }
+  else if(page==="settings"){ renderSettingsPage(); }
+}
+function header(title,subtitle){ $("topTitle").textContent=title; $("topSubtitle").textContent=subtitle; }
+function safeUnsub(key){if(state[key]){state[key]();state[key]=null;}}
+function showGuestLanding() {
+  header("Bem-vindo ao NexChat","Conecte-se com quem importa.");
+  $("composerWrap").classList.add("hidden");
+  $("mainContent").innerHTML=`<div class="welcome"><div class="welcome-orb">N</div><div class="eyebrow">A sua nova central de conversas</div><h2>Menos distância.<br><em>Mais conexão.</em></h2><p>Um espaço feito pra sua galera: converse em particular, encontre amigos e, em breve, junte todo mundo em comunidades.</p><button class="btn primary" id="guestLogin">Entrar ou criar conta&nbsp; ↗</button><div class="feature-grid"><div class="feature"><span class="feature-icon">⚡</span><div><b>Conversa em tempo real</b><span>Mensagens sincronizadas pelo Firebase.</span></div></div><div class="feature"><span class="feature-icon">🛡️</span><div><b>Conta protegida</b><span>Recursos privados exigem e-mail verificado.</span></div></div><div class="feature"><span class="feature-icon">♧</span><div><b>Feito pra sua galera</b><span>Adicione amigos e abra um papo direto.</span></div></div></div></div>`;
+  $("guestLogin").onclick=()=>showAuth();
+}
+function renderChatLanding() {
+  if(!state.user){showGuestLanding();return;}
+  if(state.activeConv && state.activeFriend){openConversation(state.activeFriend);return;}
+  header("Mensagens","Seus papos privados, num só lugar.");
+  $("composerWrap").classList.add("hidden");
+  $("mainContent").innerHTML=`<div class="welcome"><div class="welcome-orb">✦</div><div class="eyebrow">Seu espaço, sua galera</div><h2>Qual papo vai<br><em>rolar hoje?</em></h2><p>Escolha uma conversa na lateral ou encontre alguém na aba Amigos para começar.</p><button class="btn primary" id="findFriendsNow">＋ Encontrar amigos</button><div class="feature-grid"><div class="feature"><span class="feature-icon">💬</span><div><b>Mensagens diretas</b><span>Conversa privada em tempo real.</span></div></div><div class="feature"><span class="feature-icon">🫶</span><div><b>Amizades de verdade</b><span>Solicitações com confirmação.</span></div></div><div class="feature"><span class="feature-icon">🌱</span><div><b>Em evolução</b><span>Mais recursos chegando por etapas.</span></div></div></div></div>`;
+  $("findFriendsNow").onclick=()=>setPage("friends");
+}
+function avatarHtml(profile,size="") { return `<div class="avatar ${size}" style="background:${esc(profile?.avatarColor||"#24352e")}">${esc(profile?.avatarEmoji||"✦")}</div>`; }
+function renderChatList() {
+  const root=$("chatList");
+  if(!state.user){root.innerHTML='<div class="empty-list">Entre na sua conta para carregar suas conversas.</div>';return;}
+  if(!state.conversations.length){root.innerHTML='<div class="empty-list">Ainda não tem papo por aqui.<br>Adicione um amigo para começar. ✨</div>';return;}
+  const filter=$("sidebarSearch").value.trim().toLowerCase();
+  const rows=state.conversations.filter(c=>(c.otherProfile?.displayName+" "+c.otherProfile?.username).toLowerCase().includes(filter));
+  root.innerHTML=rows.map(c=>`<button class="nav-item ${state.activeConv===c.id?"active":""}" data-open-conv="${esc(c.id)}"><span class="nav-icon">${esc(c.otherProfile?.avatarEmoji||"✦")}</span><span class="nav-copy"><span class="nav-name">${esc(c.otherProfile?.displayName||"Pessoa")}</span><span class="nav-sub">${esc(c.lastMessagePreview||"Comece a conversa")}</span></span></button>`).join("")||'<div class="empty-list">Nenhuma conversa encontrada.</div>';
+  root.querySelectorAll("[data-open-conv]").forEach(b=>b.onclick=()=>{const c=state.conversations.find(x=>x.id===b.dataset.openConv);if(c)openConversation(c.otherProfile,c.id);});
+}
+async function loadProfile(user) {
+  const ref=doc(db,"users",user.uid); const snap=await getDoc(ref);
+  if(snap.exists()){setMyProfile(snap.data());closeAuth();state.profilePending=false;return true;}
+  profileSetup(user); return false;
+}
+async function startApp(user) {
+  state.user=user;
+  if(!user.emailVerified){await signOut(auth);state.user=null;showAuth();showError("authError","Seu e-mail ainda não foi verificado. Abra o link enviado para seu e-mail e depois entre novamente.");return;}
+  try {
+    const ok=await loadProfile(user);
+    if(!ok){renderChatList();return;}
+    setPage("chats"); startListeners();
+  } catch(e){console.error(e);toast(firebaseError(e));}
+}
+function startListeners(){
+  safeUnsub("unsubChats");safeUnsub("unsubFriends");safeUnsub("unsubRequests");
+  const qFriends=query(collection(db,"friendships"),where("users","array-contains",state.user.uid),limit(100));
+  state.unsubFriends=onSnapshot(qFriends,async snap=>{
+    const ids=snap.docs.map(d=>d.data().users.find(id=>id!==state.user.uid)).filter(Boolean);
+    const profiles=await Promise.all(ids.map(async uid=>{try{const s=await getDoc(doc(db,"users",uid));return s.exists()?{uid,...s.data()}:null;}catch{return null;}}));
+    state.friends=profiles.filter(Boolean); if(state.page==="friends")renderFriendsPage();
+  },e=>{console.error(e);toast(firebaseError(e));});
+  const qSent=query(collection(db,"friendRequests"),where("from","==",state.user.uid),limit(100));
+  const qReceived=query(collection(db,"friendRequests"),where("to","==",state.user.uid),limit(100));
+  let sent=[],received=[];
+  const refreshRequests=()=>{state.requests=[...received.map(x=>({...x,direction:"received"})),...sent.map(x=>({...x,direction:"sent"}))];if(state.page==="friends")renderFriendsPage();};
+  state.unsubRequests=onSnapshot(qSent,s=>{sent=s.docs.map(d=>({id:d.id,...d.data()}));refreshRequests();},e=>console.error(e));
+  // second listener is kept and cleaned together by this wrapper
+  const unsubReceived=onSnapshot(qReceived,s=>{received=s.docs.map(d=>({id:d.id,...d.data()}));refreshRequests();},e=>console.error(e));
+  const prev=state.unsubRequests; state.unsubRequests=()=>{prev();unsubReceived();};
+  const qConvs=query(collection(db,"conversations"),where("participants","array-contains",state.user.uid),limit(100));
+  state.unsubChats=onSnapshot(qConvs,async snap=>{
+    const items=await Promise.all(snap.docs.map(async d=>{
+      const data=d.data(),otherUid=data.participants.find(id=>id!==state.user.uid);
+      try{const p=await getDoc(doc(db,"users",otherUid));return {id:d.id,...data,otherProfile:p.exists()?{uid:otherUid,...p.data()}:{uid:otherUid,displayName:"Conta indisponível"}};}catch{return null;}
+    }));
+    state.conversations=items.filter(Boolean).sort((a,b)=>(b.lastMessageAt?.toMillis?.()||0)-(a.lastMessageAt?.toMillis?.()||0));
+    renderChatList();
+    if(state.activeConv){const active=state.conversations.find(c=>c.id===state.activeConv);if(active&&state.page==="chats")renderConversationHeader(active.otherProfile);}
+  },e=>{console.error(e);toast(firebaseError(e));});
+}
+function renderConversationHeader(profile) {header(profile?.displayName||"Conversa",profile?.username?"@"+profile.username:"Mensagem privada");}
+async function openConversation(profile, knownId=null) {
+  if(!state.user){showAuth();return;}
+  if(!profile?.uid){toast("Não consegui localizar esse perfil.");return;}
+  if(!state.friends.some(f=>f.uid===profile.uid)){toast("Adicione essa pessoa como amiga antes de conversar.");return;}
+  const id=knownId||pairId(state.user.uid,profile.uid);
+  try{
+    const ref=doc(db,"conversations",id);let snap=await getDoc(ref);
+    if(!snap.exists()){
+      const participants=[state.user.uid,profile.uid].sort();
+      const batch=writeBatch(db);
+      batch.set(ref,{participants,createdAt:serverTimestamp(),createdBy:state.user.uid,lastMessageAt:null,lastMessagePreview:null,lastSenderId:null,lastRead:{},blockedBy:{}});
+      await batch.commit();
+    }
+    state.activeConv=id;state.activeFriend=profile;state.page="chats";
+    document.querySelectorAll("[data-page]").forEach(el=>el.classList.toggle("active",el.dataset.page==="chats"));
+    $("composerWrap").classList.remove("hidden");$("messageInput").disabled=false;$("sendButton").disabled=false;
+    $("messageInput").placeholder=`Mensagem para ${profile.displayName||"seu amigo"}…`;
+    renderConversationHeader(profile);renderChatList();
+    safeUnsub("unsubMessages");
+    $("mainContent").innerHTML='<div class="empty-list" style="margin:auto">Carregando mensagens…</div>';
+    const messagesRef=collection(db,"conversations",id,"messages");
+    const q=query(messagesRef,orderBy("createdAt","asc"),limit(150));
+    state.unsubMessages=onSnapshot(q,snap=>{
+      const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderMessages(arr,profile);
+    },e=>{console.error(e);toast(firebaseError(e));});
+    // Atualiza somente a chave de leitura da própria pessoa.
+    try { const latest=await getDoc(ref); if(latest.exists()) await updateDoc(ref,{lastRead:{...(latest.data().lastRead||{}),[state.user.uid]:serverTimestamp()}}); } catch(e){console.warn("Read receipt:",e);}
+    $("sidePanel").classList.add("closed");$("mobileOverlay").classList.remove("show");
+  }catch(e){console.error(e);toast(firebaseError(e));}
+}
+function renderMessages(messages,profile) {
+  const content=$("mainContent");
+  if(!messages.length){content.innerHTML=`<div class="welcome" style="padding:35px 10px"><div class="welcome-orb" style="width:70px;height:70px;font-size:32px">✉</div><h2>O primeiro oi<br><em>é seu.</em></h2><p>Essa conversa é só entre vocês. Manda uma mensagem para começar.</p></div>`;}
+  else content.innerHTML=messages.map(m=>{
+    const mine=m.senderId===state.user.uid, p=mine?state.profile:profile;
+    const date=m.createdAt?.toDate?.();
+    const time=date?date.toLocaleString("pt-BR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"short"}):"agora";
+    return `<article class="msg">${avatarHtml(p)}<div class="msg-body"><div class="msg-meta"><span class="msg-author">${esc(p?.displayName||(mine?"Você":"Amigo"))}</span><span class="msg-time">${time}${m.editedAt?" · editada":""}</span></div><div class="msg-text">${esc(m.text||"")}</div></div></article>`;
+  }).join("");
+  requestAnimationFrame(()=>content.scrollTop=content.scrollHeight);
+}
+async function sendMessage(){
+  const text=$("messageInput").value.trim();
+  if(!text||!state.activeConv||!state.user)return;
+  const btn=$("sendButton");btn.disabled=true;
+  try{
+    const convRef=doc(db,"conversations",state.activeConv);
+    const snap=await getDoc(convRef);
+    if(!snap.exists())throw new Error("Essa conversa não existe mais.");
+    if(Object.keys(snap.data().blockedBy||{}).length)throw new Error("Esta conversa está bloqueada.");
+    const batch=writeBatch(db);
+    const msgRef=doc(collection(db,"conversations",state.activeConv,"messages"));
+    batch.set(msgRef,{senderId:state.user.uid,text,createdAt:serverTimestamp(),reactions:{}});
+    batch.update(convRef,{lastMessageAt:serverTimestamp(),lastMessagePreview:text.slice(0,120),lastSenderId:state.user.uid});
+    await batch.commit();$("messageInput").value="";$("messageInput").style.height="auto";
+  }catch(e){console.error(e);toast(firebaseError(e));}
+  finally{btn.disabled=false;$("messageInput").focus();}
+}
+async function findUser(){
+  const input=$("friendSearchInput");const raw=input.value.trim().toLowerCase().replace(/^@/,"");
+  if(raw.length<3){toast("Digite pelo menos 3 caracteres do @usuário.");return;}
+  const results=$("friendSearchResults");results.innerHTML='<div class="empty-list">Procurando…</div>';
+  try{
+    const q=query(collection(db,"users"),where("username",">=",raw),where("username","<=",raw+"\uf8ff"),limit(20));
+    const snap=await getDocs(q);
+    const users=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>p.uid!==state.user.uid);
+    renderUserResults(users,results);
+  }catch(e){console.error(e);results.innerHTML=`<div class="error">${esc(firebaseError(e))}</div>`;}
+}
+function renderUserResults(users,root){
+  if(!users.length){root.innerHTML='<div class="empty-list">Não achei ninguém com esse nome. Confere o @ e tenta de novo.</div>';return;}
+  root.innerHTML=users.map(p=>{
+    const isFriend=state.friends.some(f=>f.uid===p.uid);
+    const request=state.requests.find(r=>r.to===p.uid&&r.from===state.user.uid&&r.status==="pending");
+    const incoming=state.requests.find(r=>r.from===p.uid&&r.to===state.user.uid&&r.status==="pending");
+    const action=isFriend?`<button class="mini-btn green" data-chat="${esc(p.uid)}">Conversar</button>`:incoming?`<button class="mini-btn green" data-accept="${esc(incoming.id)}">Aceitar</button>`:request?`<span class="pill">Enviado</span>`:`<button class="mini-btn green" data-add="${esc(p.uid)}">＋ Adicionar</button>`;
+    return `<div class="person-row">${avatarHtml(p)}<div class="person-info"><b>${esc(p.displayName)}</b><small>@${esc(p.username)} · ${esc(p.bio||"No NexChat")}</small></div><div class="person-actions">${action}</div></div>`;
+  }).join("");
+  root.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>sendFriendRequest(b.dataset.add));
+  root.querySelectorAll("[data-chat]").forEach(b=>{b.onclick=()=>{const p=state.friends.find(f=>f.uid===b.dataset.chat);if(p)openConversation(p);};});
+  root.querySelectorAll("[data-accept]").forEach(b=>b.onclick=()=>acceptFriendRequest(b.dataset.accept));
+}
+async function sendFriendRequest(uid){
+  try{
+    const id=state.user.uid+"_"+uid;const ref=doc(db,"friendRequests",id);
+    const existing=await getDoc(ref);if(existing.exists()){toast("Já existe uma solicitação com essa pessoa.");return;}
+    await setDoc(ref,{from:state.user.uid,to:uid,status:"pending",createdAt:serverTimestamp()});
+    toast("Solicitação enviada! ✨");if(state.page==="friends")findUser();
+  }catch(e){console.error(e);toast(firebaseError(e));}
+}
+async function acceptFriendRequest(id){
+  try{
+    const reqRef=doc(db,"friendRequests",id);const reqSnap=await getDoc(reqRef);
+    if(!reqSnap.exists()||reqSnap.data().to!==state.user.uid||reqSnap.data().status!=="pending")throw new Error("Solicitação não está mais disponível.");
+    const other=reqSnap.data().from;const friendshipRef=doc(db,"friendships",pairId(state.user.uid,other));
+    const batch=writeBatch(db);
+    batch.update(reqRef,{status:"accepted",respondedAt:serverTimestamp()});
+    batch.set(friendshipRef,{users:[state.user.uid,other].sort(),createdAt:serverTimestamp()});
+    await batch.commit();toast("Vocês agora são amigos! 🫶");
+  }catch(e){console.error(e);toast(firebaseError(e));}
+}
+async function declineRequest(id){
+  try{await updateDoc(doc(db,"friendRequests",id),{status:"declined",respondedAt:serverTimestamp()});toast("Solicitação recusada.");}
+  catch(e){console.error(e);toast(firebaseError(e));}
+}
+function renderFriendsPage(){
+  header("Amigos","Encontre sua galera e comece um papo.");
+  $("composerWrap").classList.add("hidden");
+  $("mainContent").innerHTML=`<div class="content-page"><div class="page-heading"><div><div class="eyebrow">Sua comunidade começa aqui</div><h2>Amigos</h2><p>Procure por um nome de usuário e mande uma solicitação.</p></div></div><div class="panel-card"><h3>🔎 Encontrar pessoas</h3><p>Pesquise pelo @usuário. O nome completo não é necessário.</p><div style="display:flex;gap:8px"><input class="field" id="friendSearchInput" maxlength="20" placeholder="ex: gamer_123" style="min-width:0"><button class="btn primary" id="friendSearchBtn">Buscar</button></div><div id="friendSearchResults" style="margin-top:12px"></div></div><div class="panel-card"><h3>📬 Solicitações</h3><p>Veja quem quer se conectar com você.</p><div id="requestsList"></div></div><div class="panel-card"><h3>🫶 Sua galera <span class="pill">${state.friends.length}</span></h3><p>Seus amigos no NexChat.</p><div id="friendsList"></div></div></div>`;
+  $("friendSearchBtn").onclick=findUser;$("friendSearchInput").onkeydown=e=>{if(e.key==="Enter")findUser();};
+  const reqs=$("requestsList");
+  if(!state.requests.length)reqs.innerHTML='<div class="empty-list">Nenhuma solicitação por enquanto.</div>';
+  else reqs.innerHTML=state.requests.map(r=>{const p=state.friends.find(f=>f.uid===(r.direction==="received"?r.from:r.to));const title=r.direction==="received"?"Quer ser seu amigo":"Você enviou para";return `<div class="person-row"><div class="avatar">✉</div><div class="person-info"><b>${title}</b><small>${esc(r.direction==="received"?r.from:r.to)} · ${esc(r.status)}</small></div><div class="person-actions">${r.direction==="received"&&r.status==="pending"?`<button class="mini-btn green" data-accept="${esc(r.id)}">Aceitar</button><button class="mini-btn red" data-decline="${esc(r.id)}">Recusar</button>`:r.status==="pending"?'<span class="pill">Pendente</span>':`<span class="pill">${esc(r.status)}</span>`}</div></div>`;}).join("");
+  reqs.querySelectorAll("[data-accept]").forEach(b=>b.onclick=()=>acceptFriendRequest(b.dataset.accept));reqs.querySelectorAll("[data-decline]").forEach(b=>b.onclick=()=>declineRequest(b.dataset.decline));
+  const fr=$("friendsList");
+  if(!state.friends.length)fr.innerHTML='<div class="empty-list">Sua lista está vazia. Procure um @ acima para adicionar alguém.</div>';
+  else fr.innerHTML=state.friends.map(p=>`<div class="person-row">${avatarHtml(p)}<div class="person-info"><b>${esc(p.displayName)}</b><small>@${esc(p.username)} · ${esc(p.bio||"No NexChat")}</small></div><div class="person-actions"><button class="mini-btn green" data-chat="${esc(p.uid)}">Conversar</button></div></div>`).join("");
+  fr.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>{const p=state.friends.find(f=>f.uid===b.dataset.chat);if(p)openConversation(p);});
+}
+function renderCommunitiesPage(){
+  header("Comunidades","Junte sua galera em um só espaço.");
+  $("composerWrap").classList.add("hidden");
+  $("mainContent").innerHTML=`<div class="content-page"><div class="page-heading"><div><div class="eyebrow">Espaços compartilhados</div><h2>Comunidades</h2><p>Um lugar para organizar seus grupos, assuntos e eventos.</p></div></div><div class="panel-card" style="max-width:760px"><div style="font-size:36px;margin-bottom:12px">◈</div><h3>O próximo grande passo do NexChat</h3><p>O arquivo de regras que você enviou já prevê comunidades, canais, membros e convites. Para não criar grupos que pareçam funcionar mas tenham permissões erradas, a criação e a gestão de comunidades precisam entrar na próxima etapa, com testes das regras antes de publicar.</p><div class="notice">🚧 Esta área é uma prévia visual. Comunidades, canais, convites, áudio e vídeo ainda não estão ativos nesta versão.</div><button class="btn secondary" id="goFriends">Encontrar amigos primeiro</button></div><div class="panel-card" style="max-width:760px"><h3>O que está no plano</h3><div class="person-row"><span class="nav-icon">#</span><div class="person-info"><b>Canais de texto</b><small>Organize conversas por assunto.</small></div><span class="pill">Em breve</span></div><div class="person-row"><span class="nav-icon">🎙</span><div class="person-info"><b>Salas de voz</b><small>Conversa por áudio com a galera.</small></div><span class="pill">Em breve</span></div><div class="person-row"><span class="nav-icon">🛡</span><div class="person-info"><b>Cargos e moderação</b><small>Permissões claras para cada comunidade.</small></div><span class="pill">Em breve</span></div></div></div>`;
+  $("goFriends").onclick=()=>setPage("friends");
+}
+function renderSettingsPage(){
+  header("Configurações","Sua conta, seu jeito.");
+  $("composerWrap").classList.add("hidden");
+  if(!state.user){$("mainContent").innerHTML='<div class="content-page"><div class="panel-card"><h3>Entre para ajustar sua conta</h3><p>Seu perfil e as preferências ficam disponíveis depois do login.</p><button class="btn primary" id="settingsLogin">Entrar</button></div></div>';$("settingsLogin").onclick=()=>showAuth();return;}
+  const p=state.profile||{};
+  $("mainContent").innerHTML=`<div class="content-page"><div class="page-heading"><div><div class="eyebrow">Sua conta NexChat</div><h2>Configurações</h2><p>Cuide do seu perfil e da sua sessão.</p></div></div><div class="panel-card"><div class="profile-hero">${avatarHtml(p)}<div><h3>${esc(p.displayName||"Pessoa do NexChat")}</h3><p>@${esc(p.username||"")} · ${esc(state.user.email||"")}</p></div></div><form id="editProfileForm"><div class="field-wrap"><label class="label" for="editName">Nome de exibição</label><input class="field" id="editName" required maxlength="32" value="${esc(p.displayName||"")}"></div><div class="field-wrap"><label class="label" for="editBio">Bio</label><input class="field" id="editBio" maxlength="190" value="${esc(p.bio||"")}"></div><div class="split"><div class="field-wrap"><label class="label" for="editEmoji">Avatar</label><select class="field" id="editEmoji">${["😎","👾","🐸","🐱","🐼","🦊","🤖","🌟","🎮","🦈"].map(e=>`<option ${p.avatarEmoji===e?"selected":""}>${e}</option>`).join("")}</select></div><div class="field-wrap"><label class="label" for="editColor">Cor do avatar</label><input class="field" id="editColor" type="color" value="${esc(p.avatarColor||"#27d68a")}" style="height:46px;padding:5px"></div></div><button class="btn primary" type="submit">Salvar perfil</button></form></div><div class="panel-card"><h3>🛡️ Segurança e privacidade</h3><p>O acesso aos dados depende das regras do Firebase e do seu e-mail verificado.</p><div class="notice">Sua configuração do Firebase usa o plano gratuito. Este app não usa Cloud Storage para fotos nesta versão.</div><button class="btn secondary" id="resetPassword">Enviar link para trocar senha</button></div><div class="panel-card"><h3>🚪 Sessão</h3><p>Saia da sua conta neste dispositivo.</p><button class="btn danger" id="logoutButton">Sair da conta</button></div></div>`;
+  $("editProfileForm").onsubmit=async e=>{e.preventDefault();try{const updated={...p,displayName:$("editName").value.trim(),bio:$("editBio").value.trim(),avatarEmoji:$("editEmoji").value,avatarColor:$("editColor").value,updatedAt:serverTimestamp()};await updateDoc(doc(db,"users",state.user.uid),{displayName:updated.displayName,bio:updated.bio,avatarEmoji:updated.avatarEmoji,avatarColor:updated.avatarColor,updatedAt:updated.updatedAt});state.profile={...p,displayName:updated.displayName,bio:updated.bio,avatarEmoji:updated.avatarEmoji,avatarColor:updated.avatarColor};setMyProfile(state.profile);toast("Perfil atualizado!");}catch(err){toast(firebaseError(err));}};
+  $("resetPassword").onclick=async()=>{try{await sendPasswordResetEmail(auth,state.user.email);toast("Link enviado para seu e-mail.");}catch(e){toast(firebaseError(e));}};
+  $("logoutButton").onclick=async()=>{safeUnsub("unsubMessages");safeUnsub("unsubChats");safeUnsub("unsubFriends");safeUnsub("unsubRequests");await signOut(auth);state.user=null;state.profile=null;state.activeConv=null;state.activeFriend=null;state.conversations=[];state.friends=[];showAuth();showGuestLanding();renderChatList();};
+}
+$("authForm").onsubmit=async e=>{
+  e.preventDefault();hideError("authError");
+  const email=$("authEmail").value.trim(),password=$("authPassword").value;
+  try{
+    if(state.authMode==="signup"){
+      if(password!==$("authPassword2").value){showError("authError","As senhas não são iguais.");return;}
+      const cred=await createUserWithEmailAndPassword(auth,email,password);
+      await sendEmailVerification(cred.user);
+      await signOut(auth);
+      showError("authError","Conta criada! Enviamos um link de verificação para seu e-mail. Verifique a caixa de entrada/spam e depois entre.");
+      $("authError").classList.remove("hidden");return;
+    }
+    const cred=await signInWithEmailAndPassword(auth,email,password);
+    if(!cred.user.emailVerified){await sendEmailVerification(cred.user);await signOut(auth);showError("authError","Seu e-mail ainda não foi verificado. Reenviamos o link; confira sua caixa de entrada e spam.");return;}
+    await startApp(cred.user);
+  }catch(err){showError("authError",firebaseError(err));}
+};
+$("googleButton").onclick=async()=>{hideError("authError");try{const cred=await signInWithPopup(auth,googleProvider);await startApp(cred.user);}catch(e){showError("authError",firebaseError(e));}};
+$("authSwitch").onclick=()=>showAuth(state.authMode==="login"?"signup":"login");
+$("forgotPassword").onclick=async()=>{const email=$("authEmail").value.trim();if(!email){showError("authError","Digite seu e-mail primeiro.");return;}try{await sendPasswordResetEmail(auth,email);showError("authError","Se esse e-mail estiver cadastrado, o link de recuperação foi enviado.");}catch(e){showError("authError",firebaseError(e));}};
+$("profileForm").onsubmit=async e=>{
+  e.preventDefault();hideError("profileError");if(!state.user){showError("profileError","Entre novamente para continuar.");return;}
+  const username=$("profileUsername").value.trim().toLowerCase();
+  if(!/^[a-z0-9_]{3,20}$/.test(username)){showError("profileError","Use 3–20 caracteres: letras minúsculas, números e _.");return;}
+  $("profileSubmit").disabled=true;
+  try{
+    const userRef=doc(db,"users",state.user.uid),usernameRef=doc(db,"usernames",username);
+    const existing=await getDoc(usernameRef);if(existing.exists()){showError("profileError","Esse @ já está em uso. Escolha outro.");return;}
+    const now=serverTimestamp();
+    const profile={username,displayName:$("profileName").value.trim(),bio:$("profileBio").value.trim(),avatarEmoji:$("profileEmoji").value,avatarColor:$("profileColor").value,createdAt:now,updatedAt:now};
+    const batch=writeBatch(db);batch.set(usernameRef,{uid:state.user.uid,createdAt:now});batch.set(userRef,profile);await batch.commit();
+    state.profile=profile;setMyProfile(profile);state.profilePending=false;closeAuth();startListeners();setPage("chats");toast("Perfil criado. Bem-vindo ao NexChat! ✨");
+  }catch(err){showError("profileError",firebaseError(err));}
+  finally{$("profileSubmit").disabled=false;}
+};
+$("welcomeStart").onclick=()=>showAuth();
+$("closeAuth").onclick=()=>{closeAuth();if(!state.user)showGuestLanding();};
+$("headerAddFriend").onclick=()=>setPage("friends");$("headerProfile").onclick=()=>setPage("settings");
+$("refreshChats").onclick=()=>{if(state.user){safeUnsub("unsubChats");startListeners();toast("Atualizando conversas…");}};
+$("sendButton").onclick=sendMessage;
+$("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+$("messageInput").addEventListener("input",()=>{const el=$("messageInput");el.style.height="auto";el.style.height=Math.min(el.scrollHeight,130)+"px";});
+$("attachButton").onclick=()=>toast("Anexos e envio de mídia chegam numa próxima versão.");
+$("sidebarSearch").addEventListener("input",renderChatList);
+$("showSidebar").onclick=()=>{$("sidePanel").classList.remove("closed");$("mobileOverlay").classList.add("show");};
+$("mobileOverlay").onclick=()=>{$("sidePanel").classList.add("closed");$("mobileOverlay").classList.remove("show");};
+document.querySelectorAll("[data-page]").forEach(el=>el.addEventListener("click",()=>setPage(el.dataset.page)));
+onAuthStateChanged(auth,async user=>{
+  if(user){try{await reload(user);await startApp(auth.currentUser||user);}catch(e){console.error(e);toast(firebaseError(e));}}
+  else {state.user=null;state.profile=null;$("myName").textContent="Visitante";$("myHandle").textContent="Entre para começar";$("myAvatar").textContent="✦";$("connectionStatus").textContent="Modo convidado";renderChatList();showGuestLanding();}
+});
+</script>
+</body>
+</html>

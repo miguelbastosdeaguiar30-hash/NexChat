@@ -1,0 +1,33 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "presence": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true",
+        ".write": "auth != null && auth.token.email_verified === true && auth.uid === $uid",
+        ".validate": "newData.hasChild('state')",
+        "state": {
+          ".validate": "newData.isString() && (newData.val() === 'online' || newData.val() === 'away' || newData.val() === 'offline')"
+        },
+        "lastSeen": {
+          ".validate": "newData.isNumber() && newData.val() === now"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "typing": {
+      "dm": {
+        "$convId": {
+          ".read": "auth != null && auth.token.email_verified === true && ($convId.beginsWith(auth.uid + '_') || $convId.endsWith('_' + auth.uid))",
+          "$uid": {
+            ".write": "auth != null && auth.token.email_verified === true && auth.uid === $uid && ($convId.beginsWith(auth.uid + '_') || $convId.endsWith('_' + auth.uid))",
+            ".validate": "newData.isNumber() && newData.val() === now"
+          }
+        }
+      }
+    }
+  }
+}

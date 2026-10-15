@@ -1,0 +1,21 @@
+{
+  "name": "nexchat-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NexChat mobile-first web app with Firebase and Capacitor",
+  "scripts": {
+    "android:add": "npx cap add android",
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android",
+    "serve": "npx http-server www -p 8080 -c-1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "firebase": "^10.14.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
+    "http-server": "^14.1.1"
+  }
+}
